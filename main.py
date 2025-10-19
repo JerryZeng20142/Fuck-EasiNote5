@@ -3,23 +3,33 @@
 """
 希沃白板5修改工具
 主要用于修改希沃白板5中的小游戏背景音乐
-支持命令行和图形界面两种操作方式
+支持命令行、Tkinter图形界面和Rin-UI图形界面三种操作方式
 """
 
 import os
 import sys
 import argparse
+import traceback
 from audio_modifier import AudioModifier
 from config import Config
 from utils import logger
 
-# 尝试导入GUI模块，如果失败则记录警告
+# 尝试导入Tkinter GUI模块，如果失败则记录警告
 try:
     from gui import run_gui
-    GUI_AVAILABLE = True
+    TK_GUI_AVAILABLE = True
 except ImportError as e:
-    logger.warning(f"无法导入GUI模块: {str(e)}")
-    GUI_AVAILABLE = False
+    logger.warning(f"无法导入Tkinter GUI模块: {str(e)}")
+    TK_GUI_AVAILABLE = False
+
+# 尝试导入Rin-UI模块，如果失败则记录警告及安装指导
+try:
+    from gui_rin import run_rin_ui
+    RIN_GUI_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"无法导入Rin-UI模块: {str(e)}")
+    logger.warning("请尝试安装依赖: pip install PySide6 RinUI")
+    RIN_GUI_AVAILABLE = False
 
 def parse_arguments():
     """
@@ -30,48 +40,212 @@ def parse_arguments():
     """
     parser = argparse.ArgumentParser(description='希沃白板5小游戏背景音乐修改工具')
     parser.add_argument('--cli', action='store_true', help='使用命令行界面')
-    parser.add_argument('--gui', action='store_true', help='使用图形界面')
+    parser.add_argument('--gui', action='store_true', help='使用Tkinter图形界面')
+    parser.add_argument('--rin-ui', action='store_true', help='使用Rin-UI图形界面')
     return parser.parse_args()
+
+def check_dependencies():
+    """
+    检查必要的依赖是否安装
+    
+    Returns:
+        bool: 依赖是否满足
+    """
+    logger.info("检查必要依赖...")
+    try:
+        # 检查核心依赖
+        import json
+        import zipfile
+        import shutil
+        logger.info("核心依赖检查通过")
+        return True
+    except ImportError as e:
+        logger.error(f"核心依赖缺失: {e}")
+        return False
+
+def run_cli_mode():
+    """
+    运行命令行模式
+    
+    Returns:
+        bool: 是否成功运行
+    """
+    try:
+        # 直接调用命令行模式的启动函数
+        start_cli_mode()
+        return True
+    except Exception as e:
+        logger.error(f"命令行界面运行出错: {e}")
+        traceback.print_exc()
+        return False
+
+def run_tkinter_gui():
+    """
+    运行Tkinter图形界面
+    
+    Returns:
+        bool: 是否成功运行
+    """
+    try:
+        # 直接调用Tkinter GUI的run_gui函数
+        if TK_GUI_AVAILABLE:
+            run_gui()
+            return True
+        else:
+            logger.warning("Tkinter GUI不可用")
+            return False
+    except Exception as e:
+        logger.error(f"Tkinter图形界面运行出错: {e}")
+        traceback.print_exc()
+        return False
+
+def run_rin_ui_gui():
+    """
+    运行Rin-UI图形界面
+    
+    Returns:
+        bool: 是否成功运行
+    """
+    try:
+        # 直接调用Rin-UI的run_rin_ui函数
+        if RIN_GUI_AVAILABLE:
+            result = run_rin_ui()
+            # 如果run_rin_ui有返回值，则根据返回码判断是否成功
+            # 否则默认为True
+            return result == 0 if result is not None else True
+        else:
+            logger.warning("Rin-UI不可用")
+            # 显示安装指导
+            print("提示: 请安装Rin-UI依赖来使用此界面模式")
+            print("安装命令: pip install PySide6 RinUI")
+            return False
+    except Exception as e:
+        logger.error(f"Rin-UI图形界面运行出错: {e}")
+        traceback.print_exc()
+        # 显示错误和安装指导
+        print(f"错误: Rin-UI图形界面运行出错: {str(e)}")
+        print("请尝试重新安装依赖: pip install -U PySide6 RinUI")
+        return False
 
 def main():
     """
     主程序入口
-    根据参数选择启动图形界面或命令行界面
+    根据参数选择启动命令行界面、Tkinter图形界面或Rin-UI图形界面
+    改进的界面模式切换逻辑，确保能正确启动Rin-UI界面
     """
+    logger.info("希沃白板5修改工具启动")
+    
+    # 检查核心依赖
+    if not check_dependencies():
+        print("错误: 核心依赖缺失，请安装必要的Python库")
+        input("按回车键退出...")
+        sys.exit(1)
+    
     # 解析命令行参数
     args = parse_arguments()
     
-    # 决定启动模式
-    # 如果显式指定了--cli，则使用命令行界面
-    # 如果显式指定了--gui或未指定参数且GUI可用，则使用图形界面
-    use_gui = False
+    # 根据参数选择界面模式
     if args.cli:
-        use_gui = False
-    elif args.gui or (GUI_AVAILABLE and not args.cli):
-        use_gui = True
-    
-    # 根据模式启动程序
-    if use_gui:
-        start_gui_mode()
+        # 命令行模式
+        if not run_cli_mode():
+            print("命令行界面启动失败")
+            input("按回车键退出...")
+            sys.exit(1)
+    elif args.gui:
+        # Tkinter图形界面模式
+        if not run_tkinter_gui():
+            print("Tkinter图形界面启动失败，尝试命令行界面...")
+            if not run_cli_mode():
+                input("按回车键退出...")
+                sys.exit(1)
+    elif args.rin_ui:
+        # Rin-UI图形界面模式
+        if not run_rin_ui_gui():
+            print("Rin-UI图形界面启动失败，尝试Tkinter图形界面...")
+            if not run_tkinter_gui():
+                print("Tkinter图形界面启动失败，尝试命令行界面...")
+                if not run_cli_mode():
+                    input("按回车键退出...")
+                    sys.exit(1)
     else:
-        start_cli_mode()
+        # 默认模式：尝试启动Rin-UI界面，如果不可用则降级到Tkinter，如果仍然不可用则使用命令行
+        logger.info("尝试启动默认界面(优先Rin-UI)")
+        
+        # 首先尝试Rin-UI
+        if RIN_GUI_AVAILABLE and run_rin_ui_gui():
+            logger.info("Rin-UI界面正常退出")
+            return
+        else:
+            logger.warning("Rin-UI界面不可用或启动失败")
+            
+        # 降级到Tkinter
+        if TK_GUI_AVAILABLE and run_tkinter_gui():
+            logger.info("Tkinter界面正常退出")
+            return
+        else:
+            logger.warning("Tkinter界面不可用或启动失败")
+            
+        # 降级到命令行
+        if run_cli_mode():
+            logger.info("命令行界面正常退出")
+            return
+        else:
+            logger.error("所有界面模式启动失败")
+            print("错误: 无法启动任何界面模式，请检查依赖安装")
+            input("按回车键退出...")
+            sys.exit(1)
 
 def start_gui_mode():
     """
-    启动图形界面模式
+    启动Tkinter图形界面模式
     """
-    if not GUI_AVAILABLE:
-        print("错误: 图形界面不可用，请使用命令行界面或检查依赖是否正确安装")
+    if not TK_GUI_AVAILABLE:
+        print("错误: Tkinter图形界面不可用，请使用命令行界面或检查依赖是否正确安装")
         input("按回车键退出...")
         return
     
-    logger.info("启动图形界面模式")
+    logger.info("启动Tkinter图形界面模式")
     try:
         run_gui()
     except Exception as e:
-        logger.error(f"图形界面运行出错: {str(e)}")
-        print(f"错误: 图形界面运行出错: {str(e)}")
+        logger.error(f"Tkinter图形界面运行出错: {str(e)}")
+        print(f"错误: Tkinter图形界面运行出错: {str(e)}")
         input("按回车键退出...")
+
+def start_rin_ui_mode():
+    """
+    启动Rin-UI图形界面模式
+    
+    Returns:
+        int: 程序退出码
+    """
+    if not RIN_GUI_AVAILABLE:
+        print("错误: Rin-UI图形界面不可用")
+        print("请按以下步骤安装必要的依赖:")
+        print("1. 确保已安装Python 3.7或更高版本")
+        print("2. 运行命令: pip install PySide6 RinUI")
+        print("3. 如果遇到问题，尝试更新pip: python -m pip install --upgrade pip")
+        print("4. 或者使用requirements.txt: pip install -r requirements.txt")
+        input("按回车键退出...")
+        return 1
+    
+    logger.info("启动Rin-UI图形界面模式")
+    try:
+        # 调用run_rin_ui并返回其返回值
+        return run_rin_ui()
+    except ImportError as e:
+        logger.error(f"导入Rin-UI模块时出错: {str(e)}")
+        print(f"错误: 导入Rin-UI模块时出错: {str(e)}")
+        print("这可能是由于Rin-UI库安装不完整导致的")
+        print("请尝试重新安装: pip install -U PySide6 RinUI")
+        input("按回车键退出...")
+        return 1
+    except Exception as e:
+        logger.error(f"Rin-UI图形界面运行出错: {str(e)}")
+        print(f"错误: Rin-UI图形界面运行出错: {str(e)}")
+        print("请检查错误信息并尝试解决问题")
+        input("按回车键退出...")
+        return 1
 
 def start_cli_mode():
     """
@@ -108,10 +282,11 @@ def show_menu(modifier, config):
         print("1. 修改小游戏背景音乐")
         print("2. 恢复默认背景音乐")
         print("3. 查看当前配置")
-        print("4. 启动图形界面")
-        print("5. 退出")
+        print("4. 启动Tkinter图形界面")
+        print("5. 启动Rin-UI图形界面")
+        print("6. 退出")
         
-        choice = input("请输入选择 (1-5): ").strip()
+        choice = input("请输入选择 (1-6): ").strip()
         
         if choice == '1':
             # 修改背景音乐
@@ -123,13 +298,21 @@ def show_menu(modifier, config):
             # 查看当前配置
             config.show_config()
         elif choice == '4':
-            # 启动图形界面
-            if GUI_AVAILABLE:
-                print("启动图形界面...")
+            # 启动Tkinter图形界面
+            if TK_GUI_AVAILABLE:
+                print("启动Tkinter图形界面...")
                 start_gui_mode()
             else:
-                print("错误: 图形界面不可用")
+                print("错误: Tkinter图形界面不可用")
         elif choice == '5':
+            # 启动Rin-UI图形界面
+            if RIN_GUI_AVAILABLE:
+                print("启动Rin-UI图形界面...")
+                start_rin_ui_mode()
+            else:
+                print("错误: Rin-UI图形界面不可用")
+                print("尝试安装: pip install PySide6 RinUI")
+        elif choice == '6':
             # 退出程序
             print("感谢使用，再见！")
             break

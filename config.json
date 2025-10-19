@@ -1,0 +1,11 @@
+{
+    "easinote_path": "C:\\Program Files\\Seewo\\EasiNote5",
+    "games_dir": "resources\\games",
+    "backup_dir": "backups",
+    "log_level": "INFO",
+    "audio_formats": [
+        ".mp3",
+        ".wav",
+        ".ogg"
+    ]
+}
