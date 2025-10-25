@@ -104,3 +104,29 @@
 2025-10-19 14:53:47,357 - easinote_tool - INFO - 请检查配置中的希沃白板5安装路径是否正确
 2025-10-19 14:53:47,579 - easinote_tool - INFO - 错误: 未找到游戏目录: C:\Program Files\Seewo\EasiNote5\resources\games
 2025-10-19 14:53:47,580 - easinote_tool - INFO - 请检查配置中的希沃白板5安装路径是否正确
+2025-10-19 14:55:44,525 - easinote_tool - WARNING - 无法导入Rin-UI模块: No module named 'PySide6'
+2025-10-19 14:55:44,526 - easinote_tool - WARNING - 请尝试安装依赖: pip install PySide6 RinUI
+2025-10-19 14:55:44,526 - easinote_tool - INFO - 希沃白板5修改工具启动
+2025-10-19 14:55:44,526 - easinote_tool - INFO - 检查必要依赖...
+2025-10-19 14:55:44,527 - easinote_tool - INFO - 核心依赖检查通过
+2025-10-19 14:55:44,530 - easinote_tool - INFO - 尝试启动默认界面(优先Rin-UI)
+2025-10-19 14:55:44,531 - easinote_tool - WARNING - Rin-UI界面不可用或启动失败
+2025-10-19 14:55:44,707 - easinote_tool - INFO - 配置加载完成
+2025-10-19 14:55:44,707 - easinote_tool - INFO - 音频修改器初始化完成
+2025-10-19 14:55:44,760 - easinote_tool - INFO - 错误: 未找到游戏目录: C:\Program Files\Seewo\EasiNote5\resources\games
+2025-10-19 14:55:44,763 - easinote_tool - INFO - 请检查配置中的希沃白板5安装路径是否正确
+2025-10-19 14:55:44,763 - easinote_tool - INFO - GUI界面初始化完成
+2025-10-19 14:55:49,674 - easinote_tool - INFO - Tkinter界面正常退出
+2025-10-19 14:56:11,931 - easinote_tool - WARNING - 无法导入Rin-UI模块: No module named 'PySide6'
+2025-10-19 14:56:11,931 - easinote_tool - WARNING - 请尝试安装依赖: pip install PySide6 RinUI
+2025-10-19 14:56:11,932 - easinote_tool - INFO - 希沃白板5修改工具启动
+2025-10-19 14:56:11,932 - easinote_tool - INFO - 检查必要依赖...
+2025-10-19 14:56:11,932 - easinote_tool - INFO - 核心依赖检查通过
+2025-10-19 14:56:11,937 - easinote_tool - INFO - 尝试启动默认界面(优先Rin-UI)
+2025-10-19 14:56:11,937 - easinote_tool - WARNING - Rin-UI界面不可用或启动失败
+2025-10-19 14:56:12,080 - easinote_tool - INFO - 配置加载完成
+2025-10-19 14:56:12,081 - easinote_tool - INFO - 音频修改器初始化完成
+2025-10-19 14:56:12,129 - easinote_tool - INFO - 错误: 未找到游戏目录: C:\Program Files\Seewo\EasiNote5\resources\games
+2025-10-19 14:56:12,132 - easinote_tool - INFO - 请检查配置中的希沃白板5安装路径是否正确
+2025-10-19 14:56:12,132 - easinote_tool - INFO - GUI界面初始化完成
+2025-10-19 14:56:21,807 - easinote_tool - INFO - Tkinter界面正常退出
