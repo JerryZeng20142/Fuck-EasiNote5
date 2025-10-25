@@ -6,7 +6,7 @@ import QtQuick.Controls 2.15
 ApplicationWindow {
     id: mainWindow
     visible: true
-    width: 800
+    width: 1200
     height: 600
     title: "Fuck-EasiNote5 - 希沃白板5修改工具"
     
@@ -150,6 +150,8 @@ ApplicationWindow {
         // 功能卡片区域
         GridLayout {
             columns: 2
+            rowSpacing: 20
+            columnSpacing: 20
             Layout.fillWidth: true
             Layout.fillHeight: true
             
@@ -157,6 +159,7 @@ ApplicationWindow {
             Rectangle {
                 id: card1
                 Layout.fillWidth: true
+                Layout.preferredWidth: 550
                 Layout.preferredHeight: 200
                 color: mainWindow.surfaceColor
                 border.color: mainWindow.borderColor
@@ -197,7 +200,7 @@ ApplicationWindow {
                                 text: "优化启动"
                                 // primary属性已移除，使用默认样式
                                 // darkMode属性已移除，使用默认样式
-                                Layout.preferredWidth: 100
+                                Layout.preferredWidth: 130
                                 onClicked: {
                                     backend.optimizeStartup()
                                 }
@@ -206,7 +209,7 @@ ApplicationWindow {
                 Button {
                     text: "精简界面"
                     // darkMode属性已移除，使用默认样式
-                    Layout.preferredWidth: 100
+                    Layout.preferredWidth: 130
                     onClicked: {
                         backend.simplifyUI()
                     }
@@ -220,6 +223,7 @@ ApplicationWindow {
             Rectangle {
                 id: card2
                 Layout.fillWidth: true
+                Layout.preferredWidth: 550
                 Layout.preferredHeight: 200
                 color: mainWindow.surfaceColor
                 border.color: mainWindow.borderColor
@@ -260,7 +264,7 @@ ApplicationWindow {
                                 text: "应用修改"
                                 // primary属性已移除，使用默认样式
                                 // darkMode属性已移除，使用默认样式
-                                Layout.preferredWidth: 100
+                                Layout.preferredWidth: 130
                                 onClicked: {
                                     backend.applyModifications()
                                 }
@@ -269,7 +273,7 @@ ApplicationWindow {
                 Button {
                     text: "管理资源"
                     // darkMode属性已移除，使用默认样式
-                    Layout.preferredWidth: 100
+                    Layout.preferredWidth: 130
                     onClicked: {
                         backend.manageResources()
                     }
@@ -283,6 +287,7 @@ ApplicationWindow {
             Rectangle {
                 id: card3
                 Layout.fillWidth: true
+                Layout.preferredWidth: 550
                 Layout.preferredHeight: 200
                 color: mainWindow.surfaceColor
                 border.color: mainWindow.borderColor
@@ -323,7 +328,7 @@ ApplicationWindow {
                                 text: "备份设置"
                                 // primary属性已移除，使用默认样式
                                 // darkMode属性已移除，使用默认样式
-                                Layout.preferredWidth: 100
+                                Layout.preferredWidth: 130
                                 onClicked: {
                                     backend.backupSettings()
                                 }
@@ -331,8 +336,8 @@ ApplicationWindow {
                 
                 Button {
                     text: "恢复设置"
-                    darkMode: mainWindow.isDarkMode
-                    Layout.preferredWidth: 100
+                    // darkMode属性已移除，使用默认样式
+                    Layout.preferredWidth: 130
                     onClicked: {
                         backend.restoreSettings()
                     }
@@ -346,6 +351,7 @@ ApplicationWindow {
             Rectangle {
                 id: card4
                 Layout.fillWidth: true
+                Layout.preferredWidth: 550
                 Layout.preferredHeight: 200
                 color: mainWindow.surfaceColor
                 border.color: mainWindow.borderColor
@@ -385,7 +391,7 @@ ApplicationWindow {
                             Button {
                                 text: "创建备份"
                                 // primary和darkMode属性已移除，使用默认样式
-                                Layout.preferredWidth: 100
+                                Layout.preferredWidth: 130
                                 onClicked: {
                                     backend.createBackup()
                                 }
@@ -393,8 +399,8 @@ ApplicationWindow {
                 
                 Button {
                     text: "恢复原始"
-                    darkMode: mainWindow.isDarkMode
-                    Layout.preferredWidth: 100
+                    // darkMode属性已移除，使用默认样式
+                    Layout.preferredWidth: 130
                     onClicked: {
                         backend.restoreOriginal()
                     }
@@ -430,7 +436,7 @@ ApplicationWindow {
             Button {
                 text: "退出"
                 // primary和darkMode属性已移除，使用默认样式
-                Layout.preferredWidth: 80
+                Layout.preferredWidth: 100
                 onClicked: {
                     console.log("退出按钮被点击")
                     Qt.quit()
