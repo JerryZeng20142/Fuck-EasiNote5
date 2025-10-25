@@ -41,10 +41,32 @@ def main():
     logger.info('Fuck-EasiNote5 启动')
     
     try:
+        # 确保RinUI组件目录存在
+        # 现在RinUI在项目根目录下
+        rinu_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'RinUI')
+        
+        if not os.path.exists(rinu_dir):
+            logger.warning(f"RinUI组件目录不存在: {rinu_dir}")
+        else:
+            logger.info(f"RinUI组件目录: {rinu_dir}")
+        
         # 尝试启动基于RinUI的图形界面
         try:
+            logger.info("尝试启动基于RinUI的QML界面")
             from gui_qml import start_qml_gui
-            start_qml_gui()
+            exit_code = start_qml_gui()
+            if exit_code != 0:
+                logger.warning(f"QML界面退出码非零: {exit_code}")
+                # 回退到传统的Tkinter界面
+                logger.info("回退到传统Tkinter界面")
+                from gui import start_gui
+                start_gui()
+        except ImportError as e:
+            logger.warning(f"无法导入QML界面模块: {str(e)}")
+            # 回退到传统的Tkinter界面
+            logger.info("回退到传统Tkinter界面")
+            from gui import start_gui
+            start_gui()
         except Exception as qml_error:
             logger.warning(f"无法启动基于RinUI的界面: {str(qml_error)}")
             # 回退到传统的Tkinter界面
