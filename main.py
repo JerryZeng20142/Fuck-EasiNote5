@@ -14,13 +14,8 @@ from audio_modifier import AudioModifier
 from config import Config
 from utils import logger
 
-# 尝试导入Tkinter GUI模块，如果失败则记录警告
-try:
-    from gui import run_gui
-    TK_GUI_AVAILABLE = True
-except ImportError as e:
-    logger.warning(f"无法导入Tkinter GUI模块: {str(e)}")
-    TK_GUI_AVAILABLE = False
+# 移除Tkinter GUI支持
+TK_GUI_AVAILABLE = False
 
 # 尝试导入Rin-UI模块，如果失败则记录警告及安装指导
 try:
@@ -81,23 +76,13 @@ def run_cli_mode():
 
 def run_tkinter_gui():
     """
-    运行Tkinter图形界面
+    运行Tkinter图形界面（已移除）
     
     Returns:
         bool: 是否成功运行
     """
-    try:
-        # 直接调用Tkinter GUI的run_gui函数
-        if TK_GUI_AVAILABLE:
-            run_gui()
-            return True
-        else:
-            logger.warning("Tkinter GUI不可用")
-            return False
-    except Exception as e:
-        logger.error(f"Tkinter图形界面运行出错: {e}")
-        traceback.print_exc()
-        return False
+    logger.warning("Tkinter GUI支持已移除")
+    return False
 
 def run_rin_ui_gui():
     """
@@ -152,12 +137,10 @@ def main():
             input("按回车键退出...")
             sys.exit(1)
     elif args.gui:
-        # Tkinter图形界面模式
-        if not run_tkinter_gui():
-            print("Tkinter图形界面启动失败，尝试命令行界面...")
-            if not run_cli_mode():
-                input("按回车键退出...")
-                sys.exit(1)
+        # Tkinter图形界面模式（已移除）
+        print("错误: Tkinter图形界面支持已移除")
+        input("按回车键退出...")
+        sys.exit(1)
     elif args.rin_ui:
         # Rin-UI图形界面模式
         if not run_rin_ui_gui():
@@ -168,7 +151,7 @@ def main():
                     input("按回车键退出...")
                     sys.exit(1)
     else:
-        # 默认模式：尝试启动Rin-UI界面，如果不可用则降级到Tkinter，如果仍然不可用则使用命令行
+        # 默认模式：尝试启动Rin-UI界面，如果不可用则直接使用命令行
         logger.info("尝试启动默认界面(优先Rin-UI)")
         
         # 首先尝试Rin-UI
@@ -178,14 +161,7 @@ def main():
         else:
             logger.warning("Rin-UI界面不可用或启动失败")
             
-        # 降级到Tkinter
-        if TK_GUI_AVAILABLE and run_tkinter_gui():
-            logger.info("Tkinter界面正常退出")
-            return
-        else:
-            logger.warning("Tkinter界面不可用或启动失败")
-            
-        # 降级到命令行
+        # 直接降级到命令行
         if run_cli_mode():
             logger.info("命令行界面正常退出")
             return
@@ -197,20 +173,10 @@ def main():
 
 def start_gui_mode():
     """
-    启动Tkinter图形界面模式
+    启动Tkinter图形界面模式（已移除）
     """
-    if not TK_GUI_AVAILABLE:
-        print("错误: Tkinter图形界面不可用，请使用命令行界面或检查依赖是否正确安装")
-        input("按回车键退出...")
-        return
-    
-    logger.info("启动Tkinter图形界面模式")
-    try:
-        run_gui()
-    except Exception as e:
-        logger.error(f"Tkinter图形界面运行出错: {str(e)}")
-        print(f"错误: Tkinter图形界面运行出错: {str(e)}")
-        input("按回车键退出...")
+    print("错误: Tkinter图形界面支持已移除")
+    input("按回车键退出...")
 
 def start_rin_ui_mode():
     """
@@ -282,11 +248,10 @@ def show_menu(modifier, config):
         print("1. 修改小游戏背景音乐")
         print("2. 恢复默认背景音乐")
         print("3. 查看当前配置")
-        print("4. 启动Tkinter图形界面")
-        print("5. 启动Rin-UI图形界面")
-        print("6. 退出")
+        print("4. 启动Rin-UI图形界面")
+        print("5. 退出")
         
-        choice = input("请输入选择 (1-6): ").strip()
+        choice = input("请输入选择 (1-5): ").strip()
         
         if choice == '1':
             # 修改背景音乐
@@ -298,13 +263,6 @@ def show_menu(modifier, config):
             # 查看当前配置
             config.show_config()
         elif choice == '4':
-            # 启动Tkinter图形界面
-            if TK_GUI_AVAILABLE:
-                print("启动Tkinter图形界面...")
-                start_gui_mode()
-            else:
-                print("错误: Tkinter图形界面不可用")
-        elif choice == '5':
             # 启动Rin-UI图形界面
             if RIN_GUI_AVAILABLE:
                 print("启动Rin-UI图形界面...")
@@ -312,7 +270,7 @@ def show_menu(modifier, config):
             else:
                 print("错误: Rin-UI图形界面不可用")
                 print("尝试安装: pip install PySide6 RinUI")
-        elif choice == '6':
+        elif choice == '5':
             # 退出程序
             print("感谢使用，再见！")
             break
