@@ -1,387 +1,237 @@
 import QtQuick 2.15
 import QtQuick.Window 2.15
 import QtQuick.Controls 2.15
-import QtQml.Models 2.15
 import QtQuick.Layouts 1.15
-// 移除对QtQuick.Dialogs的依赖，因为当前PySide6版本可能不支持
-
-// 导入Rin-UI组件库
-import RinUI 1.0
+import "./RinUI" as RinUI
 
 Window {
-    id: mainWindow
-    width: 900
-    height: 700
     visible: true
+    width: 800
+    height: 600
     title: "希沃白板5修改工具"
-    color: "#f0f0f0"
+    minimumWidth: 600
+    minimumHeight: 400
     
-    // 状态栏消息
-    property string statusMessage: "就绪"
-    
-    // 日志内容
-    property string logContent: ""
-    
-    // 选中的音频文件路径
-    property string selectedAudioPath: ""
-    
-    // 游戏文件列表模型
-    property variant gameFilesModel: null
-    
-    // 配置对话框相关属性
-    property bool showConfigDialog: false
-    property string easinotePath: ""
-    
-    // 当Python后端更新游戏文件列表时的处理
-    function onGameFilesUpdated(model) {
-        gameFilesModel = model
-    }
-    
-    // 浏览音频文件的函数
-    function browseAudioFile() {
-        // 使用QML文件对话框
-        fileDialog.open()
-    }
-    
-    // 文件对话框
-    FileDialog {
-        id: fileDialog
-        title: "选择音频文件"
-        nameFilters: ["音频文件 (*.mp3 *.wav *.ogg *.flac)", "MP3文件 (*.mp3)", "WAV文件 (*.wav)", "OGG文件 (*.ogg)", "FLAC文件 (*.flac)"]
-        selectExisting: true
-        onAccepted: {
-            selectedAudioPath = fileDialog.fileUrl.replace("file:///", "").replace(/\//g, "\\")
-            setAudioPathFromQml(selectedAudioPath)
-        }
-    }
-    
-    // 配置对话框
-    Dialog {
-        id: configDialog
-        visible: showConfigDialog
-        title: "希沃白板5配置"
-        modal: true
-        
-        ColumnLayout {
-            width: 500
-            padding: 16
-            spacing: 16
-            
-            Label {
-                text: "希沃白板5安装目录:"
-                font.weight: Font.Bold
-            }
-            
-            RowLayout {
-                width: parent.width
-                spacing: 8
-                
-                TextField {
-                    id: configPathField
-                    text: easinotePath
-                    placeholderText: "请选择希沃白板5安装目录"
-                    Layout.fillWidth: true
-                }
-                
-                Button {
-                    text: "浏览"
-                    onClicked: {
-                        // 使用QML文件夹对话框
-                        folderDialog.open()
-                    }
-                }
-            }
-            
-            FolderDialog {
-                id: folderDialog
-                title: "选择希沃白板5安装目录"
-                selectFolder: true
-                initialFolder: easinotePath
-                onAccepted: {
-                    configPathField.text = folderDialog.fileUrl.replace("file:///", "").replace(/\//g, "\\")
-                }
-            }
-            
-            RowLayout {
-                Layout.alignment: Qt.AlignRight
-                spacing: 8
-                
-                Button {
-                    text: "取消"
-                    onClicked: {
-                        showConfigDialog = false
-                    }
-                }
-                
-                Button {
-                    text: "确定"
-                    onClicked: {
-                        setEasinotePath(configPathField.text)
-                        showConfigDialog = false
-                        backend.refreshGameFiles()
-                    }
-                }
-            }
+    // 检查是否有管理员权限
+    Component.onCompleted: {
+        if (!backend.checkAdminRights()) {
+            backend.messageBox("权限警告", "建议以管理员权限运行此程序以确保所有功能正常工作")
         }
     }
     
     // 主布局
-    ColumnLayout {
+    Rectangle {
         anchors.fill: parent
-        spacing: 0
+        color: "#f5f5f5"
         
         // 标题栏
         Rectangle {
-            color: "#3a7bd5"
-            Layout.fillWidth: true
-            Layout.preferredHeight: 50
+            width: parent.width
+            height: 50
+            color: "#0078d4"
             
             RowLayout {
                 anchors.fill: parent
-                padding: 10
-                spacing: 10
+                anchors.margins: 10
                 
-                Label {
-                    text: "希沃白板5修改工具"
-                    font.pixelSize: 18
-                    font.bold: true
+                Text {
+                    text: "希沃白板5修改工具" + " v" + backend.getConfigValue("app.version")
                     color: "white"
-                }
-                
-                Item {
-                    Layout.fillWidth: true
-                }
-                
-                Button {
-                    text: "配置路径"
-                    onClicked: {
-                        easinotePath = getEasinotePath()
-                        showConfigDialog = true
-                    }
+                    font.pointSize: 16
+                    font.bold: true
                 }
             }
         }
         
-        // 主要内容区域
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            color: "#f0f0f0"
+        // 标签页
+        TabView {
+            anchors.top: parent.top
+            anchors.topMargin: 50
+            anchors.bottom: statusBar.top
+            anchors.left: parent.left
+            anchors.right: parent.right
             
-            RowLayout {
-                anchors.fill: parent
-                spacing: 10
-                padding: 10
+            // 主界面标签页
+            Tab {
+                title: "主界面"
                 
-                // 左侧面板 - 游戏文件列表
                 ColumnLayout {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    spacing: 8
+                    anchors.fill: parent
+                    anchors.margins: 20
+                    spacing: 20
                     
-                    Rectangle {
+                    // 希沃白板路径设置
+                    GroupBox {
+                        title: "希沃白板安装路径"
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 40
-                        color: "white"
-                        radius: 4
                         
                         RowLayout {
                             anchors.fill: parent
-                            padding: 8
-                            spacing: 8
+                            anchors.margins: 10
+                            spacing: 10
                             
-                            Label {
-                                text: "游戏文件列表"
-                                font.weight: Font.Bold
-                            }
-                            
-                            Item {
+                            TextField {
+                                id: pathField
+                                text: backend.getEasiNotePath()
                                 Layout.fillWidth: true
+                                onEditingFinished: {
+                                    backend.setEasiNotePath(text)
+                                }
                             }
                             
                             Button {
-                                text: "刷新"
+                                text: "浏览..."
                                 onClicked: {
-                                    backend.refreshGameFiles()
+                                    // 实际项目中需要实现文件对话框
+                                    backend.messageBox("提示", "浏览功能正在开发中")
+                                }
+                            }
+                            
+                            Button {
+                                text: "自动检测"
+                                onClicked: {
+                                    backend.autoDetectEasiNote()
                                 }
                             }
                         }
                     }
                     
-                    Rectangle {
+                    // 操作按钮
+                    RowLayout {
                         Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        color: "white"
-                        radius: 4
+                        spacing: 20
                         
-                        ListView {
-                            id: gameFilesList
-                            anchors.fill: parent
-                            model: gameFilesModel
-                            spacing: 2
-                            clip: true
-                            
-                            delegate: Rectangle {
-                                width: parent.width
-                                height: 40
-                                color: gameFilesList.currentIndex === index ? "#e3f2fd" : "white"
-                                border.color: "#e0e0e0"
-                                border.width: 1
-                                
-                                RowLayout {
-                                    anchors.fill: parent
-                                    padding: 8
-                                    spacing: 8
-                                    
-                                    Label {
-                                        text: model.display
-                                        Layout.fillWidth: true
-                                        elide: Text.ElideRight
-                                    }
-                                }
-                                
-                                MouseArea {
-                                    anchors.fill: parent
-                                    onClicked: {
-                                        gameFilesList.currentIndex = index
-                                        // 获取完整的文件路径（存储在第二列）
-                                        var fileModel = gameFilesModel
-                                        if (fileModel && fileModel.rowCount() > index) {
-                                            var filePath = fileModel.data(fileModel.index(index, 1))
-                                            backend.selectGameFile(filePath)
-                                        }
-                                    }
-                                    onDoubleClicked: {
-                                        var fileModel = gameFilesModel
-                                        if (fileModel && fileModel.rowCount() > index) {
-                                            var filePath = fileModel.data(fileModel.index(index, 1))
-                                            backend.showFileInfo(filePath)
-                                        }
-                                    }
-                                }
+                        Button {
+                            text: "创建备份"
+                            Layout.fillWidth: true
+                            onClicked: {
+                                backend.createBackup()
+                            }
+                        }
+                        
+                        Button {
+                            text: "应用修改"
+                            Layout.fillWidth: true
+                            onClicked: {
+                                backend.applyModifications()
+                            }
+                        }
+                        
+                        Button {
+                            text: "恢复原始"
+                            Layout.fillWidth: true
+                            onClicked: {
+                                backend.restoreOriginal()
                             }
                         }
                     }
                 }
+            }
+            
+            // 功能修改标签页
+            Tab {
+                title: "功能修改"
                 
-                // 右侧面板 - 操作区
                 ColumnLayout {
-                    Layout.preferredWidth: 320
-                    Layout.fillHeight: true
-                    spacing: 8
+                    anchors.fill: parent
+                    anchors.centerIn: parent
+                    spacing: 20
                     
-                    // 音频选择区域
-                    Rectangle {
+                    Text {
+                        text: "功能修改模块正在开发中..."
+                        font.pointSize: 14
+                        color: "#666"
+                    }
+                    
+                    Text {
+                        text: "请稍后再试"
+                        color: "#999"
+                    }
+                }
+            }
+            
+            // 设置标签页
+            Tab {
+                title: "设置"
+                
+                ColumnLayout {
+                    anchors.fill: parent
+                    anchors.margins: 20
+                    spacing: 20
+                    
+                    GroupBox {
+                        title: "界面设置"
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 120
-                        color: "white"
-                        radius: 4
                         
-                        ColumnLayout {
+                        RowLayout {
                             anchors.fill: parent
-                            padding: 10
+                            anchors.margins: 10
                             spacing: 10
                             
-                            Label {
-                                text: "选择音频文件"
-                                font.weight: Font.Bold
+                            Text {
+                                text: "主题:"
+                                verticalAlignment: Text.AlignVCenter
                             }
                             
-                            RowLayout {
+                            ComboBox {
+                                id: themeCombo
+                                model: ["light", "dark"]
+                                currentIndex: themeCombo.find(backend.getConfigValue("gui.theme"))
                                 Layout.fillWidth: true
-                                spacing: 8
-                                
-                                TextField {
-                                    id: audioPathField
-                                    text: selectedAudioPath
-                                    placeholderText: "未选择音频文件"
-                                    Layout.fillWidth: true
-                                    readOnly: true
-                                }
-                                
-                                Button {
-                                    text: "浏览"
-                                    onClicked: {
-                                        browseAudioFile()
-                                    }
-                                }
-                            }
-                            
-                            Button {
-                                text: "预览音频"
-                                onClicked: {
-                                    backend.previewAudio()
-                                }
                             }
                         }
                     }
                     
-                    // 操作按钮区域
-                    Rectangle {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 160
-                        color: "white"
-                        radius: 4
-                        
-                        ColumnLayout {
-                            anchors.fill: parent
-                            padding: 10
-                            spacing: 10
-                            
-                            Label {
-                                text: "操作"
-                                font.weight: Font.Bold
-                            }
-                            
-                            Button {
-                                text: "修改背景音乐"
-                                Layout.fillWidth: true
-                                Layout.preferredHeight: 40
-                                onClicked: {
-                                    backend.modifyBgm()
-                                }
-                            }
-                            
-                            Button {
-                                text: "恢复默认背景音乐"
-                                Layout.fillWidth: true
-                                Layout.preferredHeight: 40
-                                onClicked: {
-                                    backend.restoreBgm()
-                                }
-                            }
+                    Button {
+                        text: "保存设置"
+                        Layout.alignment: Qt.AlignHCenter
+                        onClicked: {
+                            backend.setConfigValue("gui.theme", themeCombo.currentText)
+                            backend.messageBox("成功", "设置已保存")
                         }
                     }
+                }
+            }
+            
+            // 关于标签页
+            Tab {
+                title: "关于"
+                
+                ColumnLayout {
+                    anchors.centerIn: parent
+                    spacing: 15
                     
-                    // 日志区域
-                    Rectangle {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        color: "white"
-                        radius: 4
-                        
-                        ColumnLayout {
-                            anchors.fill: parent
-                            padding: 10
-                            spacing: 10
-                            
-                            Label {
-                                text: "操作日志"
-                                font.weight: Font.Bold
-                            }
-                            
-                            TextArea {
-                                text: backend.logContent
-                                Layout.fillWidth: true
-                                Layout.fillHeight: true
-                                readOnly: true
-                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                font.family: "Consolas, Monaco, 'Courier New'"
-                                font.pixelSize: 12
-                                
-                                ScrollBar.vertical: ScrollBar {}
-                            }
-                        }
+                    Text {
+                        text: backend.getConfigValue("app.name")
+                        font.pointSize: 20
+                        font.bold: true
+                        color: "#333"
+                    }
+                    
+                    Text {
+                        text: "版本: " + backend.getConfigValue("app.version")
+                        color: "#666"
+                    }
+                    
+                    Text {
+                        text: "作者: " + backend.getConfigValue("app.author")
+                        color: "#666"
+                    }
+                    
+                    Text {
+                        text: "希沃白板5修改工具，支持各种自定义设置和功能增强。"
+                        color: "#666"
+                        wrapMode: Text.WordWrap
+                        width: 300
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+                    
+                    Text {
+                        text: "使用此工具风险自负，请确保备份原始文件。"
+                        color: "#999"
+                        wrapMode: Text.WordWrap
+                        width: 300
+                        horizontalAlignment: Text.AlignHCenter
                     }
                 }
             }
@@ -389,49 +239,34 @@ Window {
         
         // 状态栏
         Rectangle {
+            id: statusBar
+            anchors.bottom: parent.bottom
+            width: parent.width
+            height: 30
             color: "#e0e0e0"
-            Layout.fillWidth: true
-            Layout.preferredHeight: 30
             
-            RowLayout {
+            Text {
+                id: statusText
                 anchors.fill: parent
-                padding: 5
-                
-                Label {
-                    text: backend.statusMessage
-                    elide: Text.ElideRight
-                    Layout.fillWidth: true
-                }
-                
-                Label {
-                    text: "版本: 0.1.0"
-                }
+                anchors.margins: 5
+                text: "就绪"
+                font.pointSize: 12
+                color: "#666"
+                verticalAlignment: Text.AlignVCenter
             }
         }
     }
     
-    // 连接后端信号到QML
+    // 监听后端信号
     Connections {
         target: backend
-        function onStatusMessageChanged(message) {
-            mainWindow.statusMessage = message
+        
+        function onStatusChanged(text) {
+            statusText.text = text
         }
-        function onLogContentChanged(content) {
-            mainWindow.logContent = content
+        
+        function onEasiNotePathChanged(path) {
+            pathField.text = path
         }
-        function onAudioPathChanged(path) {
-            mainWindow.selectedAudioPath = path
-        }
-        function onGameFilesUpdated(model) {
-            mainWindow.onGameFilesUpdated(model)
-        }
-    }
-    
-    // 初始化
-    Component.onCompleted: {
-        // 获取配置路径
-        mainWindow.easinotePath = getEasinotePath()
-        // 刷新游戏文件列表
-        backend.refreshGameFiles()
     }
 }

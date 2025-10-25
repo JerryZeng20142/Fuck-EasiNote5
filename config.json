@@ -1,0 +1,18 @@
+{
+  "app": {
+    "name": "Fuck-EasiNote5",
+    "version": "1.0",
+    "author": "Unknown"
+  },
+  "paths": {
+    "easinote_install_path": ""
+  },
+  "gui": {
+    "theme": "light",
+    "language": "zh_CN",
+    "window_size": [
+      800,
+      600
+    ]
+  }
+}
