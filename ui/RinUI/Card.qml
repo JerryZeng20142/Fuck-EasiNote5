@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Layouts 1.15
 import QtGraphicalEffects 1.15
+import "../RinUI" // 导入主题
 
 // 卡片容器组件 - 优化版（更符合RinUI Fluent Design风格）
 Rectangle {
@@ -11,16 +12,20 @@ Rectangle {
     property bool hasHeader: false
     property bool hasShadow: true
     property int cardRadius: 8
+    property bool darkMode: false
+    
+    // 使用主题颜色
+    property var currentTheme: darkMode ? Theme {}.dark.Theme : Theme {}.light.Theme
     
     // 基本样式
-    color: "#ffffff"
+    color: currentTheme.card
     radius: cardRadius
     border.width: 0 // 移除边框，使用阴影效果
     
     // 添加阴影效果
     layer.enabled: hasShadow
     layer.effect: DropShadow {
-        color: "rgba(0, 0, 0, 0.1)"
+        color: currentTheme.shadow
         radius: 10
         samples: 20
         offset.x: 0
@@ -65,7 +70,7 @@ Rectangle {
                 font.pointSize: 16
                 font.family: "Microsoft YaHei"
                 font.bold: true
-                color: "#333333"
+                color: currentTheme.text
             }
         }
         

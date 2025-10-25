@@ -1,9 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Window 2.15
-import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
-import QtQuick.Dialogs 1.3
-import "RinUI" // 导入ui/RinUI目录下的组件
+import QtQuick.Controls 2.15
 
 ApplicationWindow {
     id: mainWindow
@@ -13,15 +11,32 @@ ApplicationWindow {
     title: "Fuck-EasiNote5 - 希沃白板5修改工具"
     
     // 主题属性绑定到Backend
-    property bool isDarkMode: backend.isDarkMode
+    property bool isDarkMode: backend ? backend.isDarkMode : false
     
-    // 根据主题动态设置颜色
-    property color primaryColor: isDarkMode ? "#0078d4" : "#0078d4"
-    property color textPrimaryColor: isDarkMode ? "#ffffff" : "#333333"
-    property color textSecondaryColor: isDarkMode ? "#cccccc" : "#666666"
-    property color surfaceColor: isDarkMode ? "#1e1e1e" : "#ffffff"
-    property color borderColor: isDarkMode ? "#333333" : "#e0e0e0"
-    property color backgroundColor: isDarkMode ? "#121212" : "#f5f5f5"
+    // 使用RinUI主题系统 - 直接引用Theme组件中的属性
+    property var themeColors: {
+        "primary": isDarkMode ? "#0078d4" : "#0078d4",
+        "text": isDarkMode ? "#ffffff" : "#333333",
+        "textSecondary": isDarkMode ? "#cccccc" : "#666666",
+        "surface": isDarkMode ? "#252525" : "#ffffff",
+        "border": isDarkMode ? "#404040" : "#e0e0e0",
+        "background": isDarkMode ? "#1a1a1a" : "#f5f5f5",
+        "primaryLight": isDarkMode ? "#106ebe" : "#106ebe",
+        "primaryDark": isDarkMode ? "#005a9e" : "#005a9e",
+        "accent": isDarkMode ? "#e74c3c" : "#e74c3c",
+        "accentLight": isDarkMode ? "#d13438" : "#d13438",
+        "accentDark": isDarkMode ? "#b31919" : "#b31919",
+        "shadow": isDarkMode ? "rgba(0, 0, 0, 0.3)" : "rgba(0, 0, 0, 0.1)",
+        "radius": 4
+    }
+    
+    property var currentTheme: themeColors
+    property color primaryColor: currentTheme.primary
+    property color textPrimaryColor: currentTheme.text
+    property color textSecondaryColor: currentTheme.textSecondary
+    property color surfaceColor: currentTheme.surface
+    property color borderColor: currentTheme.border
+    property color backgroundColor: currentTheme.background
     
     // 连接Backend信号
     Connections {
@@ -36,7 +51,8 @@ ApplicationWindow {
     
     // 主布局
     ColumnLayout {
-        anchors.fill: parent
+        Layout.fillWidth: true
+        Layout.fillHeight: true
         anchors.margins: 20
         
         // 标题区域
@@ -74,6 +90,10 @@ ApplicationWindow {
             
             Button {
                 text: mainWindow.isDarkMode ? "☀️ 亮色" : "🌙 暗色"
+                background: Rectangle {
+
+                    radius: mainWindow.currentTheme.radius
+                }
                 onClicked: {
                     backend.toggleTheme()
                 }
@@ -92,19 +112,19 @@ ApplicationWindow {
                 verticalAlignment: Text.AlignVCenter
             }
             
-            // 使用基础组件创建输入框
+            // 使用主题样式的输入框
             Rectangle {
                 id: easiNotePathField
                 Layout.fillWidth: true
-                height: 30
+                height: 36
                 color: mainWindow.surfaceColor
                 border.color: mainWindow.borderColor
-                radius: 4
+                radius: mainWindow.currentTheme.radius
                 
                 TextInput {
                     id: pathInput
                     anchors.fill: parent
-                    anchors.margins: 5
+                    anchors.margins: 10
                     text: backend ? backend.getEasiNotePath() : ""
                     color: mainWindow.textPrimaryColor
                     focus: true
@@ -117,6 +137,10 @@ ApplicationWindow {
             
             Button {
                 text: "自动检测"
+                background: Rectangle {
+
+                    radius: mainWindow.currentTheme.radius
+                }
                 onClicked: {
                     backend.autoDetectEasiNote()
                 }
@@ -129,37 +153,34 @@ ApplicationWindow {
             Layout.fillWidth: true
             Layout.fillHeight: true
             
-            // 第一个功能卡片 - 使用基础组件
+            // 第一个功能卡片
             Rectangle {
                 id: card1
                 Layout.fillWidth: true
                 Layout.preferredHeight: 200
                 color: mainWindow.surfaceColor
                 border.color: mainWindow.borderColor
-                radius: 8
+                border.width: 1
+                radius: mainWindow.currentTheme.radius
                 
                 ColumnLayout {
                     anchors.fill: parent
+                    spacing: 12
                     
-                    // 卡片标题
-                    Rectangle {
+                    Text {
                         Layout.fillWidth: true
-                        height: 40
-                        color: mainWindow.primaryColor
-                        radius: 8
-                        
-                        Text {
-                            anchors.centerIn: parent
-                            text: "基础功能修改"
-                            color: "#ffffff"
-                            font.bold: true
-                        }
+                        text: "基础功能修改"
+                        color: mainWindow.textPrimaryColor
+                        font.pixelSize: 16
+                        font.bold: true
+                        padding: 12
                     }
                     
-                    // 卡片内容
                     ColumnLayout {
-                        anchors.fill: parent
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
                         anchors.margins: 16
+                        spacing: 16
                         
                         Text {
                             text: "优化启动项、精简界面等基础功能修改"
@@ -174,55 +195,55 @@ ApplicationWindow {
                             
                             Button {
                                 text: "优化启动"
+                                // primary属性已移除，使用默认样式
+                                // darkMode属性已移除，使用默认样式
                                 Layout.preferredWidth: 100
                                 onClicked: {
                                     backend.optimizeStartup()
                                 }
                             }
-                            
-                            Button {
-                                text: "精简界面"
-                                Layout.preferredWidth: 100
-                                onClicked: {
-                                    backend.simplifyUI()
-                                }
-                            }
+                
+                Button {
+                    text: "精简界面"
+                    // darkMode属性已移除，使用默认样式
+                    Layout.preferredWidth: 100
+                    onClicked: {
+                        backend.simplifyUI()
+                    }
+                }
                         }
                     }
                 }
             }
             
-            // 第二个功能卡片 - 使用基础组件
+            // 第二个功能卡片
             Rectangle {
                 id: card2
                 Layout.fillWidth: true
                 Layout.preferredHeight: 200
                 color: mainWindow.surfaceColor
                 border.color: mainWindow.borderColor
-                radius: 8
+                border.width: 1
+                radius: mainWindow.currentTheme.radius
                 
                 ColumnLayout {
                     anchors.fill: parent
+                    spacing: 12
                     
-                    // 卡片标题
-                    Rectangle {
+                    Text {
                         Layout.fillWidth: true
-                        height: 40
-                        color: mainWindow.primaryColor
-                        radius: 8
-                        
-                        Text {
-                            anchors.centerIn: parent
-                            text: "高级功能设置"
-                            color: "#ffffff"
-                            font.bold: true
-                        }
+                        text: "高级功能设置"
+                        color: mainWindow.textPrimaryColor
+                        font.pixelSize: 16
+                        font.bold: true
+                        padding: 12
                     }
                     
-                    // 卡片内容
                     ColumnLayout {
-                        anchors.fill: parent
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
                         anchors.margins: 16
+                        spacing: 16
                         
                         Text {
                             text: "应用高级修改和管理资源"
@@ -237,55 +258,55 @@ ApplicationWindow {
                             
                             Button {
                                 text: "应用修改"
+                                // primary属性已移除，使用默认样式
+                                // darkMode属性已移除，使用默认样式
                                 Layout.preferredWidth: 100
                                 onClicked: {
                                     backend.applyModifications()
                                 }
-                            }
-                            
-                            Button {
-                                text: "管理资源"
-                                Layout.preferredWidth: 100
-                                onClicked: {
-                                    backend.manageResources()
-                                }
-                            }
+                }
+                
+                Button {
+                    text: "管理资源"
+                    // darkMode属性已移除，使用默认样式
+                    Layout.preferredWidth: 100
+                    onClicked: {
+                        backend.manageResources()
+                    }
+                }
                         }
                     }
                 }
             }
             
-            // 第三个功能卡片 - 使用基础组件
+            // 第三个功能卡片
             Rectangle {
                 id: card3
                 Layout.fillWidth: true
                 Layout.preferredHeight: 200
                 color: mainWindow.surfaceColor
                 border.color: mainWindow.borderColor
-                radius: 8
+                border.width: 1
+                radius: mainWindow.currentTheme.radius
                 
                 ColumnLayout {
                     anchors.fill: parent
+                    spacing: 12
                     
-                    // 卡片标题
-                    Rectangle {
+                    Text {
                         Layout.fillWidth: true
-                        height: 40
-                        color: mainWindow.primaryColor
-                        radius: 8
-                        
-                        Text {
-                            anchors.centerIn: parent
-                            text: "配置文件管理"
-                            color: "#ffffff"
-                            font.bold: true
-                        }
+                        text: "配置文件管理"
+                        color: mainWindow.textPrimaryColor
+                        font.pixelSize: 16
+                        font.bold: true
+                        padding: 12
                     }
                     
-                    // 卡片内容
                     ColumnLayout {
-                        anchors.fill: parent
-                        anchors.margins: 16
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    anchors.margins: 16
+                    spacing: 16
                         
                         Text {
                             text: "备份和恢复希沃白板的配置设置"
@@ -300,55 +321,55 @@ ApplicationWindow {
                             
                             Button {
                                 text: "备份设置"
+                                // primary属性已移除，使用默认样式
+                                // darkMode属性已移除，使用默认样式
                                 Layout.preferredWidth: 100
                                 onClicked: {
                                     backend.backupSettings()
                                 }
-                            }
-                            
-                            Button {
-                                text: "恢复设置"
-                                Layout.preferredWidth: 100
-                                onClicked: {
-                                    backend.restoreSettings()
-                                }
-                            }
+                }
+                
+                Button {
+                    text: "恢复设置"
+                    darkMode: mainWindow.isDarkMode
+                    Layout.preferredWidth: 100
+                    onClicked: {
+                        backend.restoreSettings()
+                    }
+                }
                         }
                     }
                 }
             }
             
-            // 第四个功能卡片 - 使用基础组件
+            // 第四个功能卡片
             Rectangle {
                 id: card4
                 Layout.fillWidth: true
                 Layout.preferredHeight: 200
                 color: mainWindow.surfaceColor
                 border.color: mainWindow.borderColor
-                radius: 8
+                border.width: 1
+                radius: mainWindow.currentTheme.radius
                 
                 ColumnLayout {
                     anchors.fill: parent
+                    spacing: 12
                     
-                    // 卡片标题
-                    Rectangle {
+                    Text {
                         Layout.fillWidth: true
-                        height: 40
-                        color: mainWindow.primaryColor
-                        radius: 8
-                        
-                        Text {
-                            anchors.centerIn: parent
-                            text: "备份与恢复"
-                            color: "#ffffff"
-                            font.bold: true
-                        }
+                        text: "备份与恢复"
+                        color: mainWindow.textPrimaryColor
+                        font.pixelSize: 16
+                        font.bold: true
+                        padding: 12
                     }
                     
-                    // 卡片内容
                     ColumnLayout {
-                        anchors.fill: parent
-                        anchors.margins: 16
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    anchors.margins: 16
+                    spacing: 16
                         
                         Text {
                             text: "备份当前配置或恢复原始文件"
@@ -363,19 +384,21 @@ ApplicationWindow {
                             
                             Button {
                                 text: "创建备份"
+                                // primary和darkMode属性已移除，使用默认样式
                                 Layout.preferredWidth: 100
                                 onClicked: {
                                     backend.createBackup()
                                 }
-                            }
-                            
-                            Button {
-                                text: "恢复原始"
-                                Layout.preferredWidth: 100
-                                onClicked: {
-                                    backend.restoreOriginal()
-                                }
-                            }
+                }
+                
+                Button {
+                    text: "恢复原始"
+                    darkMode: mainWindow.isDarkMode
+                    Layout.preferredWidth: 100
+                    onClicked: {
+                        backend.restoreOriginal()
+                    }
+                }
                         }
                     }
                 }
@@ -406,6 +429,7 @@ ApplicationWindow {
             
             Button {
                 text: "退出"
+                // primary和darkMode属性已移除，使用默认样式
                 Layout.preferredWidth: 80
                 onClicked: {
                     console.log("退出按钮被点击")
@@ -422,8 +446,8 @@ ApplicationWindow {
             }
             
             function onMessageBox(title, content) {
-                // 简单的消息框实现
-                var msgBox = Qt.createQmlObject('import QtQuick.Controls 2.15; import QtQuick.Dialogs 1.3; MessageDialog { title: "' + title + '"; text: "' + content + '"; visible: true; standardButtons: StandardButton.Ok }', mainWindow)
+                // 自定义消息框实现
+                var msgBox = Qt.createQmlObject('import QtQuick 2.15; import QtQuick.Controls 2.15; import QtQuick.Layouts 1.15; Rectangle { id: messageBox; anchors.centerIn: parent; width: 400; height: 200; color: "white"; radius: 8; border.color: "#0078d4"; z: 100; ColumnLayout { anchors.fill: parent; spacing: 10; Text { text: "' + title + '"; font.bold: true; font.pointSize: 16; color: "#333333"; Layout.fillWidth: true; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; padding: 10; } Text { text: "' + content + '"; color: "#666666"; wrapMode: Text.WordWrap; Layout.fillWidth: true; Layout.fillHeight: true; padding: Qt.rect(20, 0, 20, 0); } Button { text: "确定"; background: Rectangle { color: "#0078d4"; radius: 4; } color: "white"; Layout.alignment: Qt.AlignRight; onClicked: messageBox.destroy(); } } }', mainWindow)
             }
         }
     }
