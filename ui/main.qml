@@ -3,9 +3,9 @@ import QtQuick.Window 2.15
 import QtQuick.Controls 2.15
 import QtQml.Models 2.15
 import QtQuick.Layouts 1.15
-import QtQuick.Dialogs 1.3
+// 移除对QtQuick.Dialogs的依赖，因为当前PySide6版本可能不支持
 
-// 尝试导入Rin-UI组件库
+// 导入Rin-UI组件库
 import RinUI 1.0
 
 Window {
