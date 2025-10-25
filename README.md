@@ -37,7 +37,7 @@ python main.py
 
 ## 开发状态
 
-- [x] 图形界面框架（支持RinUI和传统Tkinter）
+- [x] 图形界面框架（RinUI）
 - [ ] 备份功能
 - [ ] 修改功能
 - [ ] 恢复功能
