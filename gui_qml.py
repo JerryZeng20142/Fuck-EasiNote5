@@ -11,10 +11,11 @@ import logging
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QQmlApplicationEngine
 from PySide6.QtCore import QObject, Signal, Slot, QUrl, Property, QFile, QFileInfo, QByteArray
+from PySide6.QtWidgets import QFileDialog
 import darkdetect
 
 from config import config_manager
-from utils import find_easinote_path, is_admin
+from utils import find_easinote_path, find_activities_audios_path, is_admin
 
 logger = logging.getLogger(__name__)
 
@@ -88,6 +89,16 @@ class Backend(QObject):
                 config_manager.set('paths.easinote_install_path', path)
                 config_manager.save()
                 self.statusChanged.emit(f"已找到希沃白板安装路径: {path}")
+                
+                # 检测到安装路径后，查找活动音频资源路径
+                self.statusChanged.emit("正在查找活动音频资源路径...")
+                audios_path = find_activities_audios_path()
+                if audios_path:
+                    config_manager.set('paths.activities_audios_path', audios_path)
+                    config_manager.save()
+                    self.statusChanged.emit(f"已找到活动音频资源路径: {audios_path}")
+                else:
+                    self.statusChanged.emit("未找到活动音频资源路径")
             else:
                 self.messageBox.emit("未找到", "无法自动检测希沃白板安装路径，请手动选择")
                 self.statusChanged.emit("就绪")
@@ -253,6 +264,43 @@ class Backend(QObject):
         except Exception as e:
             logger.error(f"获取资源列表失败: {str(e)}")
             return []
+    
+    @Slot()
+    def openFileDialog(self):
+        """打开文件选择对话框"""
+        try:
+            self.statusChanged.emit("打开文件选择对话框...")
+            
+            # 创建文件对话框
+            options = QFileDialog.Options()
+            options |= QFileDialog.ReadOnly
+            
+            # 打开文件选择对话框，允许多选
+            files, _ = QFileDialog.getOpenFileNames(
+                caption="选择要导入的资源文件",
+                dir="",
+                filter="所有文件 (*);;音频文件 (*.mp3 *.wav *.ogg *.flac);;图片文件 (*.png *.jpg *.jpeg *.gif)",
+                options=options
+            )
+            
+            if files:
+                self.statusChanged.emit(f"选择了 {len(files)} 个文件，正在导入...")
+                success_count = 0
+                for file_path in files:
+                    if self.importResource(file_path):
+                        success_count += 1
+                
+                if success_count > 0:
+                    self.statusChanged.emit(f"成功导入 {success_count} 个资源文件")
+                else:
+                    self.statusChanged.emit("就绪")
+            else:
+                self.statusChanged.emit("就绪")
+                
+        except Exception as e:
+            logger.error(f"打开文件对话框失败: {str(e)}")
+            self.statusChanged.emit("就绪")
+            self.messageBox.emit("错误", f"无法打开文件对话框: {str(e)}")
     
     @Slot()
     def openResourceFolder(self):

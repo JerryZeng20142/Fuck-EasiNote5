@@ -5,7 +5,8 @@
     "author": "Unknown"
   },
   "paths": {
-    "easinote_install_path": "D:\\Program Files (x86)\\Seewo\\EasiNote5"
+    "easinote_install_path": "D:\\Program Files (x86)\\Seewo\\EasiNote5",
+    "activities_audios_path": "D:\\Program Files (x86)\\Seewo\\EasiNote5\\EasiNote5_5.2.4.9158\\Main\\.packages\\Activities\\Audios"
   },
   "gui": {
     "theme": "light",
