@@ -6,9 +6,11 @@ import QtQuick.Controls 2.15
 ApplicationWindow {
     id: mainWindow
     visible: true
-    width: 1200
-    height: 600
-    title: "Fuck-EasiNote5 - 希沃白板5修改工具"
+    minimumWidth: 850
+    minimumHeight: 650
+    width: 850 // 进一步减小默认宽度
+    height: 650 // 进一步减小高度
+    title: "希沃白板5小游戏音乐修改"
     
     // 主题属性绑定到Backend
     property bool isDarkMode: backend ? backend.isDarkMode : false
@@ -53,14 +55,17 @@ ApplicationWindow {
     ColumnLayout {
         Layout.fillWidth: true
         Layout.fillHeight: true
+        Layout.alignment: Qt.AlignCenter
         anchors.margins: 20
         
         // 标题区域
         RowLayout {
             Layout.fillWidth: true
+            Layout.alignment: Qt.AlignHCenter
+            spacing: 10
             
             Text {
-                text: "Fuck-EasiNote5"
+                text: "希沃白板5小游戏音乐修改"
                 font.pointSize: 24
                 font.bold: true
                 color: mainWindow.primaryColor
@@ -70,7 +75,7 @@ ApplicationWindow {
                 text: "v1.0.0"
                 font.pointSize: 14
                 color: mainWindow.textSecondaryColor
-                Layout.alignment: Qt.AlignBottom
+                Layout.alignment: Qt.AlignVCenter
             }
         }
         
@@ -90,10 +95,6 @@ ApplicationWindow {
             
             Button {
                 text: mainWindow.isDarkMode ? "☀️ 亮色" : "🌙 暗色"
-                background: Rectangle {
-
-                    radius: mainWindow.currentTheme.radius
-                }
                 onClicked: {
                     backend.toggleTheme()
                 }
@@ -137,10 +138,6 @@ ApplicationWindow {
             
             Button {
                 text: "自动检测"
-                background: Rectangle {
-
-                    radius: mainWindow.currentTheme.radius
-                }
                 onClicked: {
                     backend.autoDetectEasiNote()
                 }
@@ -149,82 +146,23 @@ ApplicationWindow {
         
         // 功能卡片区域
         GridLayout {
-            columns: 2
+            // 根据窗口宽度自动调整列数
+            columns: mainWindow.width < 900 ? 1 : 2
             rowSpacing: 20
             columnSpacing: 20
             Layout.fillWidth: true
-            Layout.fillHeight: true
+            Layout.preferredHeight: mainWindow.height * 0.6 // 自适应高度
+            Layout.alignment: Qt.AlignHCenter | Qt.AlignTop // 水平居中且顶部对齐
             
-            // 第一个功能卡片
-            Rectangle {
-                id: card1
-                Layout.fillWidth: true
-                Layout.preferredWidth: 550
-                Layout.preferredHeight: 200
-                color: mainWindow.surfaceColor
-                border.color: mainWindow.borderColor
-                border.width: 1
-                radius: mainWindow.currentTheme.radius
-                
-                ColumnLayout {
-                    anchors.fill: parent
-                    spacing: 12
-                    
-                    Text {
-                        Layout.fillWidth: true
-                        text: "基础功能修改"
-                        color: mainWindow.textPrimaryColor
-                        font.pixelSize: 16
-                        font.bold: true
-                        padding: 12
-                    }
-                    
-                    ColumnLayout {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        anchors.margins: 16
-                        spacing: 16
-                        
-                        Text {
-                            text: "优化启动项、精简界面等基础功能修改"
-                            color: mainWindow.textPrimaryColor
-                            wrapMode: Text.WordWrap
-                        }
-                        
-                        RowLayout {
-                            Layout.fillWidth: true
-                            spacing: 10
-                            Layout.alignment: Qt.AlignRight
-                            
-                            Button {
-                                text: "优化启动"
-                                // primary属性已移除，使用默认样式
-                                // darkMode属性已移除，使用默认样式
-                                Layout.preferredWidth: 130
-                                onClicked: {
-                                    backend.optimizeStartup()
-                                }
-                            }
-                
-                Button {
-                    text: "精简界面"
-                    // darkMode属性已移除，使用默认样式
-                    Layout.preferredWidth: 130
-                    onClicked: {
-                        backend.simplifyUI()
-                    }
-                }
-                        }
-                    }
-                }
-            }
+            // 第一个功能卡片已移除
             
             // 第二个功能卡片
             Rectangle {
                 id: card2
                 Layout.fillWidth: true
-                Layout.preferredWidth: 550
-                Layout.preferredHeight: 200
+                Layout.minimumWidth: 350
+                Layout.maximumWidth: 800 // 设置合理的最大宽度
+                Layout.preferredHeight: 180
                 color: mainWindow.surfaceColor
                 border.color: mainWindow.borderColor
                 border.width: 1
@@ -250,7 +188,7 @@ ApplicationWindow {
                         spacing: 16
                         
                         Text {
-                            text: "应用高级修改和管理资源"
+                            text: "管理资源"
                             color: mainWindow.textPrimaryColor
                             wrapMode: Text.WordWrap
                         }
@@ -258,101 +196,29 @@ ApplicationWindow {
                         RowLayout {
                             Layout.fillWidth: true
                             spacing: 10
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignHCenter
                             
                             Button {
-                                text: "应用修改"
-                                // primary属性已移除，使用默认样式
-                                // darkMode属性已移除，使用默认样式
+                                text: "管理资源"
                                 Layout.preferredWidth: 130
                                 onClicked: {
-                                    backend.applyModifications()
+                                    backend.manageResources()
                                 }
-                }
-                
-                Button {
-                    text: "管理资源"
-                    // darkMode属性已移除，使用默认样式
-                    Layout.preferredWidth: 130
-                    onClicked: {
-                        backend.manageResources()
-                    }
-                }
+                            }
                         }
                     }
                 }
             }
             
-            // 第三个功能卡片
-            Rectangle {
-                id: card3
-                Layout.fillWidth: true
-                Layout.preferredWidth: 550
-                Layout.preferredHeight: 200
-                color: mainWindow.surfaceColor
-                border.color: mainWindow.borderColor
-                border.width: 1
-                radius: mainWindow.currentTheme.radius
-                
-                ColumnLayout {
-                    anchors.fill: parent
-                    spacing: 12
-                    
-                    Text {
-                        Layout.fillWidth: true
-                        text: "配置文件管理"
-                        color: mainWindow.textPrimaryColor
-                        font.pixelSize: 16
-                        font.bold: true
-                        padding: 12
-                    }
-                    
-                    ColumnLayout {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    anchors.margins: 16
-                    spacing: 16
-                        
-                        Text {
-                            text: "备份和恢复希沃白板的配置设置"
-                            color: mainWindow.textPrimaryColor
-                            wrapMode: Text.WordWrap
-                        }
-                        
-                        RowLayout {
-                            Layout.fillWidth: true
-                            spacing: 10
-                            Layout.alignment: Qt.AlignRight
-                            
-                            Button {
-                                text: "备份设置"
-                                // primary属性已移除，使用默认样式
-                                // darkMode属性已移除，使用默认样式
-                                Layout.preferredWidth: 130
-                                onClicked: {
-                                    backend.backupSettings()
-                                }
-                }
-                
-                Button {
-                    text: "恢复设置"
-                    // darkMode属性已移除，使用默认样式
-                    Layout.preferredWidth: 130
-                    onClicked: {
-                        backend.restoreSettings()
-                    }
-                }
-                        }
-                    }
-                }
-            }
+            // 第三个功能卡片已移除（配置文件管理）
             
             // 第四个功能卡片
             Rectangle {
                 id: card4
                 Layout.fillWidth: true
-                Layout.preferredWidth: 550
-                Layout.preferredHeight: 200
+                Layout.minimumWidth: 350
+                Layout.maximumWidth: 800 // 设置合理的最大宽度
+                Layout.preferredHeight: 180
                 color: mainWindow.surfaceColor
                 border.color: mainWindow.borderColor
                 border.width: 1
@@ -386,63 +252,30 @@ ApplicationWindow {
                         RowLayout {
                             Layout.fillWidth: true
                             spacing: 10
-                            Layout.alignment: Qt.AlignRight
+                            Layout.alignment: Qt.AlignHCenter
                             
                             Button {
                                 text: "创建备份"
-                                // primary和darkMode属性已移除，使用默认样式
                                 Layout.preferredWidth: 130
                                 onClicked: {
                                     backend.createBackup()
                                 }
-                }
-                
-                Button {
-                    text: "恢复原始"
-                    // darkMode属性已移除，使用默认样式
-                    Layout.preferredWidth: 130
-                    onClicked: {
-                        backend.restoreOriginal()
-                    }
-                }
+                            }
+                            
+                            Button {
+                                text: "恢复原始"
+                                Layout.preferredWidth: 130
+                                onClicked: {
+                                    backend.restoreOriginal()
+                                }
+                            }
                         }
                     }
                 }
             }
         }
         
-        // 底部信息
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.alignment: Qt.AlignBottom
-            
-            Text {
-                text: "© 2024 Fuck-EasiNote5"
-                color: mainWindow.textSecondaryColor
-            }
-            
-            Item {
-                Layout.fillWidth: true
-            }
-            
-            // 管理员权限检查
-            Text {
-                id: adminStatus
-                text: backend && backend.checkAdminRights() ? "已获取管理员权限" : "需要管理员权限"
-                color: backend && backend.checkAdminRights() ? "#4CAF50" : "#F44336"
-                visible: false // 默认隐藏，需要时可显示
-            }
-            
-            Button {
-                text: "退出"
-                // primary和darkMode属性已移除，使用默认样式
-                Layout.preferredWidth: 100
-                onClicked: {
-                    console.log("退出按钮被点击")
-                    Qt.quit()
-                }
-            }
-        }
+        // 底部信息区域已移除
         
         // 监听状态变化
         Connections {
@@ -452,8 +285,14 @@ ApplicationWindow {
             }
             
             function onMessageBox(title, content) {
-                // 自定义消息框实现
-                var msgBox = Qt.createQmlObject('import QtQuick 2.15; import QtQuick.Controls 2.15; import QtQuick.Layouts 1.15; Rectangle { id: messageBox; anchors.centerIn: parent; width: 400; height: 200; color: "white"; radius: 8; border.color: "#0078d4"; z: 100; ColumnLayout { anchors.fill: parent; spacing: 10; Text { text: "' + title + '"; font.bold: true; font.pointSize: 16; color: "#333333"; Layout.fillWidth: true; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; padding: 10; } Text { text: "' + content + '"; color: "#666666"; wrapMode: Text.WordWrap; Layout.fillWidth: true; Layout.fillHeight: true; padding: Qt.rect(20, 0, 20, 0); } Button { text: "确定"; background: Rectangle { color: "#0078d4"; radius: 4; } color: "white"; Layout.alignment: Qt.AlignRight; onClicked: messageBox.destroy(); } } }', mainWindow)
+                // 自定义消息框实现 - 适配主题
+                var isDark = mainWindow.isDarkMode;
+                var surfaceColor = isDark ? "#252525" : "#ffffff";
+                var textColor = isDark ? "#ffffff" : "#333333";
+                var secondaryTextColor = isDark ? "#cccccc" : "#666666";
+                var primaryColor = "#0078d4";
+                
+                var msgBox = Qt.createQmlObject('import QtQuick 2.15; import QtQuick.Controls 2.15; import QtQuick.Layouts 1.15; Rectangle { id: messageBox; anchors.centerIn: parent; width: 400; height: 200; color: "' + surfaceColor + '"; radius: 8; border.color: "' + primaryColor + '"; z: 100; ColumnLayout { anchors.fill: parent; spacing: 10; Text { text: "' + title + '"; font.bold: true; font.pointSize: 16; color: "' + textColor + '"; Layout.fillWidth: true; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; padding: 10; } Text { text: "' + content + '"; color: "' + secondaryTextColor + '"; wrapMode: Text.WordWrap; Layout.fillWidth: true; Layout.fillHeight: true; padding: Qt.rect(20, 0, 20, 0); } Button { text: "确定"; Layout.alignment: Qt.AlignRight; onClicked: messageBox.destroy(); } } }', mainWindow)
             }
         }
     }

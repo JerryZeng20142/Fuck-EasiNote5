@@ -6,10 +6,11 @@
 
 import os
 import sys
+import shutil
 import logging
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QQmlApplicationEngine
-from PySide6.QtCore import QObject, Signal, Slot, QUrl, Property
+from PySide6.QtCore import QObject, Signal, Slot, QUrl, Property, QFile, QFileInfo, QByteArray
 import darkdetect
 
 from config import config_manager
@@ -25,6 +26,7 @@ class Backend(QObject):
     easiNotePathChanged = Signal(str)
     messageBox = Signal(str, str)  # 标题, 内容
     themeChanged = Signal(str)
+    resourcesUpdated = Signal()  # 资源列表更新信号
     
     def __init__(self):
         super().__init__()
@@ -36,6 +38,10 @@ class Backend(QObject):
         if not current_theme:
             config_manager.set('gui.theme', 'dark' if self._dark_mode else 'light')
             config_manager.save()
+        # 初始化资源文件夹路径
+        self.imported_resources_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'imported_resources')
+        # 确保资源文件夹存在
+        os.makedirs(self.imported_resources_dir, exist_ok=True)
     
     # 属性定义
     @Property(bool, notify=themeChanged)
@@ -145,9 +151,130 @@ class Backend(QObject):
     
     @Slot()
     def manageResources(self):
-        """管理资源"""
-        self.statusChanged.emit("资源管理功能开发中...")
-        self.messageBox.emit("提示", "资源管理功能开发中")
+        """管理资源 - 触发打开资源管理窗口的信号"""
+        try:
+            self.statusChanged.emit("打开资源管理窗口...")
+            # 确保资源文件夹存在
+            os.makedirs(self.imported_resources_dir, exist_ok=True)
+            self.resourcesUpdated.emit()  # 通知UI资源列表已更新
+        except Exception as e:
+            logger.error(f"准备资源管理窗口失败: {str(e)}")
+            self.messageBox.emit("错误", f"准备资源管理窗口失败: {str(e)}")
+    
+    @Slot(str, result=bool)
+    def importResource(self, filePath):
+        """导入资源文件
+        
+        Args:
+            filePath: 文件路径
+            
+        Returns:
+            bool: 导入是否成功
+        """
+        try:
+            self.statusChanged.emit(f"正在导入资源: {os.path.basename(filePath)}")
+            
+            # 确保资源文件夹存在
+            os.makedirs(self.imported_resources_dir, exist_ok=True)
+            
+            # 获取目标文件路径
+            fileName = os.path.basename(filePath)
+            destPath = os.path.join(self.imported_resources_dir, fileName)
+            
+            # 处理文件名冲突
+            counter = 1
+            baseName, ext = os.path.splitext(fileName)
+            while os.path.exists(destPath):
+                destPath = os.path.join(self.imported_resources_dir, f"{baseName}_{counter}{ext}")
+                counter += 1
+            
+            # 复制文件
+            shutil.copy2(filePath, destPath)
+            logger.info(f"资源导入成功: {destPath}")
+            
+            # 通知资源列表已更新
+            self.resourcesUpdated.emit()
+            self.statusChanged.emit(f"资源导入成功: {os.path.basename(destPath)}")
+            return True
+        except Exception as e:
+            logger.error(f"导入资源失败: {str(e)}")
+            self.messageBox.emit("错误", f"导入资源失败: {str(e)}")
+            self.statusChanged.emit("就绪")
+            return False
+    
+    @Slot(str, result=bool)
+    def deleteResource(self, fileName):
+        """删除资源文件
+        
+        Args:
+            fileName: 文件名
+            
+        Returns:
+            bool: 删除是否成功
+        """
+        try:
+            filePath = os.path.join(self.imported_resources_dir, fileName)
+            if os.path.exists(filePath):
+                os.remove(filePath)
+                logger.info(f"资源删除成功: {fileName}")
+                self.resourcesUpdated.emit()  # 通知资源列表已更新
+                self.statusChanged.emit(f"资源删除成功: {fileName}")
+                return True
+            else:
+                logger.warning(f"资源文件不存在: {fileName}")
+                self.messageBox.emit("警告", "资源文件不存在")
+                return False
+        except Exception as e:
+            logger.error(f"删除资源失败: {str(e)}")
+            self.messageBox.emit("错误", f"删除资源失败: {str(e)}")
+            return False
+    
+    @Slot(result='QVariantList')
+    def getResourceList(self):
+        """获取导入的资源列表
+        
+        Returns:
+            list: 资源文件列表，每个元素包含文件名、大小、修改时间等信息
+        """
+        try:
+            resources = []
+            if os.path.exists(self.imported_resources_dir):
+                for fileName in os.listdir(self.imported_resources_dir):
+                    filePath = os.path.join(self.imported_resources_dir, fileName)
+                    if os.path.isfile(filePath):
+                        fileInfo = {
+                            'name': fileName,
+                            'size': os.path.getsize(filePath),
+                            'modified': os.path.getmtime(filePath),
+                            'path': filePath
+                        }
+                        resources.append(fileInfo)
+            return resources
+        except Exception as e:
+            logger.error(f"获取资源列表失败: {str(e)}")
+            return []
+    
+    @Slot()
+    def openResourceFolder(self):
+        """打开资源文件夹"""
+        try:
+            # 确保资源文件夹存在
+            os.makedirs(self.imported_resources_dir, exist_ok=True)
+            self.statusChanged.emit(f"打开资源文件夹: {self.imported_resources_dir}")
+            # 在Windows系统上打开文件夹
+            if sys.platform.startswith('win'):
+                os.startfile(self.imported_resources_dir)
+            # 在macOS上打开文件夹
+            elif sys.platform == 'darwin':
+                os.system(f'open "{self.imported_resources_dir}"')
+            # 在Linux上打开文件夹
+            else:
+                os.system(f'xdg-open "{self.imported_resources_dir}"')
+            self.statusChanged.emit("就绪")
+        except Exception as e:
+            logger.error(f"打开资源文件夹失败: {str(e)}")
+            self.statusChanged.emit("就绪")
+            self.messageBox.emit("错误", f"无法打开资源文件夹: {str(e)}")
     
     @Slot()
     def backupSettings(self):
