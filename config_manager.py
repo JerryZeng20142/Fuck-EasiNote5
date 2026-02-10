@@ -16,6 +16,24 @@ class ConfigManager:
         """
         self.config_file = Path(config_file)
         self.config = self._load_config()
+        
+        # 初始化文件夹路径
+        self._init_folders()
+    
+    def _init_folders(self):
+        """
+        初始化必要的文件夹
+        """
+        # 获取项目根目录
+        project_root = Path(__file__).parent
+        
+        # 备份文件夹
+        self.backups_dir = project_root / "backups"
+        self.backups_dir.mkdir(exist_ok=True)
+        
+        # 用户导入文件夹
+        self.user_imports_dir = project_root / "user_imports"
+        self.user_imports_dir.mkdir(exist_ok=True)
     
     def _load_config(self):
         """
@@ -98,3 +116,21 @@ class ConfigManager:
             theme: 主题名称（"auto", "dark", "light"）
         """
         self.set("theme", theme)
+    
+    def get_backups_dir(self):
+        """
+        获取备份文件夹路径
+        
+        返回：
+            Path: 备份文件夹路径
+        """
+        return self.backups_dir
+    
+    def get_user_imports_dir(self):
+        """
+        获取用户导入文件夹路径
+        
+        返回：
+            Path: 用户导入文件夹路径
+        """
+        return self.user_imports_dir
